@@ -1,11 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 const languages = [
   { value: "csharp", label: "C# (.NET)" },
   { value: "java", label: "Java (Spring Boot)" },
   { value: "python", label: "Python (Flask)" },
+];
+
+const classesLanguages = [
+  { value: "javascript", label: "JavaScript" },
+  { value: "typescript", label: "TypeScript" },
+  { value: "python", label: "Python" },
+  { value: "csharp", label: "C#" },
+  { value: "java", label: "Java" },
 ];
 
 const defaultInput = `GET /api/quizzes
@@ -25,30 +33,31 @@ export default function Home() {
   const [status, setStatus] = useState("Ready to generate.");
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [classesLang, setClassesLang] = useState("javascript");
+  const [classesOutput, setClassesOutput] = useState("");
 
-  async function handleGenerate() {
-    setStatus("Generating controller...");
+  async function generateWith(text: string, ctrlLang: string, clsLang: string) {
+    if (!text.trim()) return;
+    setStatus("Generating controller and classes...");
     setIsLoading(true);
 
     try {
-      let response;
+      let response: Response;
       if (uploadedFile) {
         const formData = new FormData();
-        formData.append("language", language);
+        formData.append("language", ctrlLang);
+        formData.append("classesLang", clsLang);
         formData.append("file", uploadedFile);
-        if (inputText.trim()) {
-          formData.append("inputText", inputText);
-        }
-
-        response = await fetch("http://localhost:5000/api/generate", {
+        if (text.trim()) formData.append("inputText", text);
+        response = await fetch("http://localhost:5002/api/generate", {
           method: "POST",
           body: formData,
         });
       } else {
-        response = await fetch("http://localhost:5000/api/generate", {
+        response = await fetch("http://localhost:5002/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputText, language }),
+          body: JSON.stringify({ inputText: text, language: ctrlLang, classesLang: clsLang }),
         });
       }
 
@@ -56,16 +65,33 @@ export default function Home() {
       if (!response.ok) {
         setStatus(json.error || "Generation failed.");
         setOutput("");
+        setClassesOutput("");
       } else {
         setOutput(json.controllerCode || "");
-        setStatus("Controller generated successfully.");
+        setClassesOutput(json.classesCode || "");
+        setStatus("Controller and classes generated successfully.");
       }
-    } catch (error) {
+    } catch {
       setStatus("Server request failed. Is the backend running?");
       setOutput("");
+      setClassesOutput("");
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function handleGenerate() {
+    generateWith(inputText, language, classesLang);
+  }
+
+  function handleControllerLangChange(val: string) {
+    setLanguage(val);
+    if (!isLoading && (output || classesOutput)) generateWith(inputText, val, classesLang);
+  }
+
+  function handleClassesLangChange(val: string) {
+    setClassesLang(val);
+    if (!isLoading && (output || classesOutput)) generateWith(inputText, language, val);
   }
 
   function handleCopy() {
@@ -90,6 +116,28 @@ export default function Home() {
     setStatus("Download started.");
   }
 
+  function handleCopyClasses() {
+    navigator.clipboard.writeText(classesOutput);
+    setStatus("Copied classes to clipboard.");
+  }
+
+  function handleDownloadClasses() {
+    const filename = `classes-${classesLang}.txt`;
+    const blob = new Blob([classesOutput], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    setStatus("Download started.");
+  }
+
+  function handleClearClasses() {
+    setClassesOutput("");
+    setStatus("Classes output cleared.");
+  }
+
   return (
     <main className="page-shell">
       <section className="hero-panel">
@@ -106,8 +154,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid-panel">
-        <div className="card input-card">
+      <div className="input-section">
+        <div className="card">
           <div className="card-header">
             <h2>Input</h2>
             <span>Text, JSON, or PDF upload</span>
@@ -115,7 +163,7 @@ export default function Home() {
           <textarea
             value={inputText}
             onChange={(event) => setInputText(event.target.value)}
-            rows={14}
+            rows={8}
             aria-label="API endpoint input"
           />
           <div className="file-upload-row">
@@ -133,9 +181,23 @@ export default function Home() {
             {uploadedFile && <span className="file-meta">Selected: {uploadedFile.name}</span>}
           </div>
           <div className="controls-row">
+            <button className="primary-button" onClick={handleGenerate} disabled={isLoading}>
+              Generate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="outputs-row">
+        <div className="card output-card">
+          <div className="card-header">
+            <div>
+              <h2>Controller</h2>
+              <span>Server-side controller code</span>
+            </div>
             <label>
               Language
-              <select value={language} onChange={(event) => setLanguage(event.target.value)}>
+              <select value={language} onChange={(event) => handleControllerLangChange(event.target.value)}>
                 {languages.map((item) => (
                   <option key={item.value} value={item.value}>
                     {item.label}
@@ -143,33 +205,51 @@ export default function Home() {
                 ))}
               </select>
             </label>
-            <button className="primary-button" onClick={handleGenerate} disabled={isLoading}>
-              Generate
-            </button>
           </div>
+          <div className="output-actions">
+            <button onClick={handleCopy} disabled={!output}>Copy</button>
+            <button onClick={handleDownload} disabled={!output}>Download</button>
+            <button className="secondary-button" onClick={handleClear} disabled={!output}>Clear</button>
+          </div>
+          <pre className="output-block">{output || "Controller code will appear here."}</pre>
         </div>
 
         <div className="card output-card">
           <div className="card-header">
             <div>
-              <h2>Generated Controller</h2>
-              <span>Controller code output for the selected language.</span>
+              <h2>Classes</h2>
+              <span>Client-side caller code</span>
             </div>
+            <label>
+              Language
+              <select
+                value={classesLang}
+                onChange={(event) => handleClassesLangChange(event.target.value)}
+              >
+                {classesLanguages.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
           <div className="output-actions">
-            <button onClick={handleCopy} disabled={!output}>
+            <button onClick={handleCopyClasses} disabled={!classesOutput}>
               Copy
             </button>
-            <button onClick={handleDownload} disabled={!output}>
+            <button onClick={handleDownloadClasses} disabled={!classesOutput}>
               Download
             </button>
-            <button className="secondary-button" onClick={handleClear} disabled={!output}>
+            <button className="secondary-button" onClick={handleClearClasses} disabled={!classesOutput}>
               Clear
             </button>
           </div>
-          <pre className="output-block">{output || "Your generated controller will appear here."}</pre>
+          <pre className="output-block">
+            {classesOutput || "Classes code will appear here."}
+          </pre>
         </div>
-      </section>
+      </div>
     </main>
   );
 }

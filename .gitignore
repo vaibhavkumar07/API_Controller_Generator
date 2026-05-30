@@ -1,6 +1,7 @@
 # Python
 backend/.venv
 backend/__pycache__
+backend/tests/__pycache__/
 backend/*.py[cod]
 backend/*.pyo
 
@@ -8,6 +9,15 @@ backend/*.pyo
 frontend/node_modules
 frontend/.next
 frontend/out
+frontend/tsconfig.tsbuildinfo
 
 # System
 .DS_Store
+
+# AI / cloud tooling
+.superpowers/
+docs/superpowers/
+AGENTS.md
+GEMINI.md
+CLAUDE.md
+.cursor/

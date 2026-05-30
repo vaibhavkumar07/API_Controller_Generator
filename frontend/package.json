@@ -2,6 +2,7 @@
   "name": "api-controller-generator",
   "version": "0.1.0",
   "private": true,
+  "author": "Vaibhavkumar Yadav",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
