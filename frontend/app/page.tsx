@@ -107,7 +107,7 @@ export default function Home() {
       </section>
 
       <div className="input-section">
-        <div className="card input-card">
+        <div className="card">
           <div className="card-header">
             <h2>Input</h2>
             <span>Text, JSON, or PDF upload</span>
