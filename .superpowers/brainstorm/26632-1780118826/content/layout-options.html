@@ -1,0 +1,82 @@
+<h2>Where should the Classes box go?</h2>
+<p class="subtitle">Pick the layout for the third output panel</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#0f0f17">
+      <div style="font-size:10px;color:#888;margin-bottom:6px">OPTION A — Three columns</div>
+      <div style="display:flex;gap:6px;height:120px">
+        <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+          <div style="background:#313244;padding:4px 6px;font-size:9px;color:#cba6f7">INPUT</div>
+          <div style="flex:1;padding:6px;font-size:8px;color:#6c7086">Paste endpoints here...</div>
+        </div>
+        <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+          <div style="background:#313244;padding:4px 6px;font-size:9px;color:#89b4fa">CONTROLLER</div>
+          <div style="flex:1;padding:6px;font-size:8px;color:#6c7086">public class User...</div>
+        </div>
+        <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+          <div style="background:#313244;padding:4px 6px;font-size:9px;color:#a6e3a1">CLASSES</div>
+          <div style="flex:1;padding:6px;font-size:8px;color:#6c7086">async function get...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Three Columns</h3>
+      <p>Input, Controller, Classes side-by-side. Equal width. Good for wide screens.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#0f0f17">
+      <div style="font-size:10px;color:#888;margin-bottom:6px">OPTION B — Input top, outputs below</div>
+      <div style="display:flex;flex-direction:column;gap:6px;height:120px">
+        <div style="background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column;flex:0 0 40px">
+          <div style="background:#313244;padding:4px 6px;font-size:9px;color:#cba6f7">INPUT — full width</div>
+          <div style="padding:4px 6px;font-size:8px;color:#6c7086">Paste endpoints here...</div>
+        </div>
+        <div style="display:flex;gap:6px;flex:1">
+          <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+            <div style="background:#313244;padding:4px 6px;font-size:9px;color:#89b4fa">CONTROLLER</div>
+            <div style="flex:1;padding:6px;font-size:8px;color:#6c7086">public class User...</div>
+          </div>
+          <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+            <div style="background:#313244;padding:4px 6px;font-size:9px;color:#a6e3a1">CLASSES</div>
+            <div style="flex:1;padding:6px;font-size:8px;color:#6c7086">async function get...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Input Top, Outputs Below</h3>
+      <p>Input spans full width on top. Controller + Classes share the bottom row. More input space.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#0f0f17">
+      <div style="font-size:10px;color:#888;margin-bottom:6px">OPTION C — Input left, outputs stacked right</div>
+      <div style="display:flex;gap:6px;height:120px">
+        <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+          <div style="background:#313244;padding:4px 6px;font-size:9px;color:#cba6f7">INPUT</div>
+          <div style="flex:1;padding:6px;font-size:8px;color:#6c7086">Paste endpoints here...</div>
+        </div>
+        <div style="flex:2;display:flex;flex-direction:column;gap:6px">
+          <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+            <div style="background:#313244;padding:4px 6px;font-size:9px;color:#89b4fa">CONTROLLER</div>
+            <div style="padding:4px 6px;font-size:8px;color:#6c7086">public class User...</div>
+          </div>
+          <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+            <div style="background:#313244;padding:4px 6px;font-size:9px;color:#a6e3a1">CLASSES</div>
+            <div style="padding:4px 6px;font-size:8px;color:#6c7086">async function get...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Input Left, Outputs Stacked</h3>
+      <p>Input on left. Controller on top-right, Classes below it. Outputs get more vertical space.</p>
+    </div>
+  </div>
+
+</div>

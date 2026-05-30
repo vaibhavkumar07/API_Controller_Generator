@@ -1,0 +1,49 @@
+<h2>Which languages for the "Classes" selector?</h2>
+<p class="subtitle">Client caller code languages — pick all that should be included</p>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="js" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>JavaScript (fetch)</h3>
+      <pre style="font-size:11px;margin:6px 0 0;background:#1e1e2e;color:#cdd6f4;padding:8px;border-radius:6px;overflow:auto">async function getUsers() {
+  const res = await fetch('/api/user');
+  return await res.json();
+}</pre>
+    </div>
+  </div>
+  <div class="option" data-choice="ts" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>TypeScript (typed fetch)</h3>
+      <pre style="font-size:11px;margin:6px 0 0;background:#1e1e2e;color:#cdd6f4;padding:8px;border-radius:6px;overflow:auto">async function getUsers(): Promise&lt;User[]&gt; {
+  const res = await fetch('/api/user');
+  return await res.json() as User[];
+}</pre>
+    </div>
+  </div>
+  <div class="option" data-choice="python" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Python (requests)</h3>
+      <pre style="font-size:11px;margin:6px 0 0;background:#1e1e2e;color:#cdd6f4;padding:8px;border-radius:6px;overflow:auto">import requests
+
+def get_users():
+    r = requests.get('http://localhost:5001/api/user')
+    r.raise_for_status()
+    return r.json()</pre>
+    </div>
+  </div>
+  <div class="option" data-choice="csharp" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>C# (HttpClient)</h3>
+      <pre style="font-size:11px;margin:6px 0 0;background:#1e1e2e;color:#cdd6f4;padding:8px;border-radius:6px;overflow:auto">var client = new HttpClient();
+var res = await client.GetAsync("/api/user");
+var users = await res.Content
+    .ReadFromJsonAsync&lt;List&lt;User&gt;&gt;();</pre>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">Multi-select — pick all languages you want available. Java also possible (mention in terminal).</p>

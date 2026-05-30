@@ -1,0 +1,80 @@
+<h2>Where do the two language selectors go?</h2>
+<p class="subtitle">Controller lang + Classes lang are now independent — where should each live?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#0f0f17">
+      <div style="font-size:10px;color:#888;margin-bottom:6px">OPTION A — Selectors inside each output header</div>
+      <div style="display:flex;flex-direction:column;gap:5px;height:130px">
+        <div style="background:#1e1e2e;border:1px solid #313244;border-radius:4px;padding:5px 7px;font-size:8px;color:#6c7086">
+          INPUT ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔<br/>
+          <span style="color:#cba6f7">Paste endpoints...</span>
+          <div style="margin-top:4px;text-align:right"><span style="background:#cba6f7;color:#1e1e2e;padding:2px 6px;border-radius:3px;font-size:8px">Generate</span></div>
+        </div>
+        <div style="display:flex;gap:5px;flex:1">
+          <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+            <div style="background:#313244;padding:4px 6px;font-size:8px;color:#89b4fa;display:flex;justify-content:space-between;align-items:center">
+              CONTROLLER
+              <select style="font-size:7px;background:#1e1e2e;color:#cdd6f4;border:1px solid #45475a;border-radius:2px;padding:1px 2px">
+                <option>C#</option>
+              </select>
+            </div>
+            <div style="flex:1;padding:5px;font-size:7px;color:#6c7086">public class User...</div>
+          </div>
+          <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+            <div style="background:#313244;padding:4px 6px;font-size:8px;color:#a6e3a1;display:flex;justify-content:space-between;align-items:center">
+              CLASSES
+              <select style="font-size:7px;background:#1e1e2e;color:#cdd6f4;border:1px solid #45475a;border-radius:2px;padding:1px 2px">
+                <option>JS</option>
+              </select>
+            </div>
+            <div style="flex:1;padding:5px;font-size:7px;color:#6c7086">async function...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>In Output Headers</h3>
+      <p>Each panel owns its selector. Change language without re-generating — just re-render that panel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#0f0f17">
+      <div style="font-size:10px;color:#888;margin-bottom:6px">OPTION B — Both selectors below input, before Generate</div>
+      <div style="display:flex;flex-direction:column;gap:5px;height:130px">
+        <div style="background:#1e1e2e;border:1px solid #313244;border-radius:4px;padding:5px 7px;font-size:8px;color:#6c7086;flex:1">
+          INPUT ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔<br/>
+          <span style="color:#cba6f7">Paste endpoints...</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;padding:2px 0">
+          <div style="font-size:8px;color:#6c7086">Controller lang:</div>
+          <select style="font-size:7px;background:#1e1e2e;color:#cdd6f4;border:1px solid #45475a;border-radius:2px;padding:1px 4px">
+            <option>C#</option>
+          </select>
+          <div style="font-size:8px;color:#6c7086;margin-left:8px">Classes lang:</div>
+          <select style="font-size:7px;background:#1e1e2e;color:#cdd6f4;border:1px solid #45475a;border-radius:2px;padding:1px 4px">
+            <option>JavaScript</option>
+          </select>
+          <span style="margin-left:auto;background:#cba6f7;color:#1e1e2e;padding:2px 6px;border-radius:3px;font-size:8px">Generate</span>
+        </div>
+        <div style="display:flex;gap:5px;flex:1.2">
+          <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+            <div style="background:#313244;padding:3px 6px;font-size:8px;color:#89b4fa">CONTROLLER</div>
+            <div style="flex:1;padding:5px;font-size:7px;color:#6c7086">public class User...</div>
+          </div>
+          <div style="flex:1;background:#1e1e2e;border:1px solid #313244;border-radius:4px;display:flex;flex-direction:column">
+            <div style="background:#313244;padding:3px 6px;font-size:8px;color:#a6e3a1">CLASSES</div>
+            <div style="flex:1;padding:5px;font-size:7px;color:#6c7086">async function...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Grouped Below Input</h3>
+      <p>Both selectors in one toolbar row with Generate. Clear pre-generation config. Requires regenerate to change language.</p>
+    </div>
+  </div>
+
+</div>
