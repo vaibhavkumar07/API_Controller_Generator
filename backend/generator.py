@@ -338,12 +338,276 @@ def _generate_ts_classes(endpoints: List[Dict[str, Any]]) -> str:
 
 
 def _generate_python_classes(endpoints: List[Dict[str, Any]]) -> str:
-    raise NotImplementedError("Python classes generation not yet implemented")
+    # Used by generate_classes dispatch
+    lines = ["import requests", "", "BASE_URL = 'http://localhost:5001'", ""]
+    for ep in endpoints:
+        method = ep["method"]
+        path = ep["path"]
+        func_name = _get_caller_func_name_snake(method, path)
+        route = path if path.startswith("/") else f"/{path}"
+        model_name = _guess_model_name(path)
+
+        if method == "GET":
+            lines += [
+                f"def {func_name}():",
+                "    try:",
+                f"        response = requests.get(BASE_URL + '{route}')",
+                "        response.raise_for_status()",
+                "        data = response.json()",
+                "        print(data)",
+                "        return data",
+                "    except requests.RequestException as e:",
+                "        print(f'Error: {e}')",
+                "        raise",
+                "",
+                f"{func_name}()",
+                "",
+            ]
+        elif method == "POST":
+            lines += [
+                f"def {func_name}(payload: dict):",
+                "    try:",
+                f"        response = requests.post(BASE_URL + '{route}', json=payload)",
+                "        response.raise_for_status()",
+                "        data = response.json()",
+                "        print(data)",
+                "        return data",
+                "    except requests.RequestException as e:",
+                "        print(f'Error: {e}')",
+                "        raise",
+                "",
+                f"{func_name}({{}})",
+                "",
+            ]
+        elif method == "PUT":
+            lines += [
+                f"def {func_name}(id: int, payload: dict):",
+                "    try:",
+                f"        response = requests.put(BASE_URL + '{route}/' + str(id), json=payload)",
+                "        response.raise_for_status()",
+                "        print('Updated successfully')",
+                "    except requests.RequestException as e:",
+                "        print(f'Error: {e}')",
+                "        raise",
+                "",
+                f"{func_name}(1, {{}})",
+                "",
+            ]
+        elif method == "DELETE":
+            lines += [
+                f"def {func_name}(id: int):",
+                "    try:",
+                f"        response = requests.delete(BASE_URL + '{route}/' + str(id))",
+                "        response.raise_for_status()",
+                "        print('Deleted successfully')",
+                "    except requests.RequestException as e:",
+                "        print(f'Error: {e}')",
+                "        raise",
+                "",
+                f"{func_name}(1)",
+                "",
+            ]
+        else:
+            lines += [f"# {method} {path} — not supported", ""]
+
+    return "\n".join(lines)
 
 
 def _generate_csharp_classes(endpoints: List[Dict[str, Any]]) -> str:
-    raise NotImplementedError("C# classes generation not yet implemented")
+    lines = [
+        "using System.Net.Http;",
+        "using System.Net.Http.Json;",
+        "",
+        "var client = new HttpClient();",
+        "var BASE_URL = \"http://localhost:5001\";",
+        "",
+    ]
+    for ep in endpoints:
+        method = ep["method"]
+        path = ep["path"]
+        func_name = _get_caller_func_name(method, path)
+        route = path if path.startswith("/") else f"/{path}"
+        model_name = _guess_model_name(path)
+
+        if method == "GET":
+            lines += [
+                f"async Task {func_name}Async()",
+                "{",
+                "    try",
+                "    {",
+                f"        var response = await client.GetAsync(BASE_URL + \"{route}\");",
+                "        response.EnsureSuccessStatusCode();",
+                "        var data = await response.Content.ReadAsStringAsync();",
+                "        Console.WriteLine(data);",
+                "    }",
+                "    catch (Exception e)",
+                "    {",
+                "        Console.Error.WriteLine($\"Error: {e.Message}\");",
+                "        throw;",
+                "    }",
+                "}",
+                "",
+                f"await {func_name}Async();",
+                "",
+            ]
+        elif method == "POST":
+            lines += [
+                f"async Task {func_name}Async({model_name} body)",
+                "{",
+                "    try",
+                "    {",
+                f"        var response = await client.PostAsJsonAsync(BASE_URL + \"{route}\", body);",
+                "        response.EnsureSuccessStatusCode();",
+                "        var data = await response.Content.ReadAsStringAsync();",
+                "        Console.WriteLine(data);",
+                "    }",
+                "    catch (Exception e)",
+                "    {",
+                "        Console.Error.WriteLine($\"Error: {e.Message}\");",
+                "        throw;",
+                "    }",
+                "}",
+                "",
+                f"await {func_name}Async(new {model_name}());",
+                "",
+            ]
+        elif method == "PUT":
+            lines += [
+                f"async Task {func_name}Async(int id, {model_name} body)",
+                "{",
+                "    try",
+                "    {",
+                f"        var response = await client.PutAsJsonAsync(BASE_URL + \"{route}/\" + id, body);",
+                "        response.EnsureSuccessStatusCode();",
+                "        Console.WriteLine(\"Updated successfully\");",
+                "    }",
+                "    catch (Exception e)",
+                "    {",
+                "        Console.Error.WriteLine($\"Error: {e.Message}\");",
+                "        throw;",
+                "    }",
+                "}",
+                "",
+                f"await {func_name}Async(1, new {model_name}());",
+                "",
+            ]
+        elif method == "DELETE":
+            lines += [
+                f"async Task {func_name}Async(int id)",
+                "{",
+                "    try",
+                "    {",
+                f"        var response = await client.DeleteAsync(BASE_URL + \"{route}/\" + id);",
+                "        response.EnsureSuccessStatusCode();",
+                "        Console.WriteLine(\"Deleted successfully\");",
+                "    }",
+                "    catch (Exception e)",
+                "    {",
+                "        Console.Error.WriteLine($\"Error: {e.Message}\");",
+                "        throw;",
+                "    }",
+                "}",
+                "",
+                f"await {func_name}Async(1);",
+                "",
+            ]
+        else:
+            lines += [f"// {method} {path} — not supported", ""]
+
+    return "\n".join(lines)
 
 
 def _generate_java_classes(endpoints: List[Dict[str, Any]]) -> str:
-    raise NotImplementedError("Java classes generation not yet implemented")
+    lines = [
+        "import java.net.URI;",
+        "import java.net.http.HttpClient;",
+        "import java.net.http.HttpRequest;",
+        "import java.net.http.HttpRequest.BodyPublishers;",
+        "import java.net.http.HttpResponse;",
+        "",
+        "HttpClient client = HttpClient.newHttpClient();",
+        "String BASE_URL = \"http://localhost:5001\";",
+        "",
+    ]
+    for ep in endpoints:
+        method = ep["method"]
+        path = ep["path"]
+        func_name = _get_caller_func_name(method, path)
+        route = path if path.startswith("/") else f"/{path}"
+
+        if method == "GET":
+            lines += [
+                f"void {func_name}() throws Exception {{",
+                f"    HttpRequest request = HttpRequest.newBuilder()",
+                f"        .uri(URI.create(BASE_URL + \"{route}\"))",
+                "        .GET()",
+                "        .header(\"Content-Type\", \"application/json\")",
+                "        .build();",
+                "    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());",
+                "    if (response.statusCode() < 200 || response.statusCode() >= 300) {",
+                "        throw new RuntimeException(\"API Error: \" + response.statusCode());",
+                "    }",
+                "    System.out.println(response.body());",
+                "}",
+                "",
+                f"{func_name}();",
+                "",
+            ]
+        elif method == "POST":
+            lines += [
+                f"void {func_name}(String jsonBody) throws Exception {{",
+                f"    HttpRequest request = HttpRequest.newBuilder()",
+                f"        .uri(URI.create(BASE_URL + \"{route}\"))",
+                "        .POST(BodyPublishers.ofString(jsonBody))",
+                "        .header(\"Content-Type\", \"application/json\")",
+                "        .build();",
+                "    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());",
+                "    if (response.statusCode() < 200 || response.statusCode() >= 300) {",
+                "        throw new RuntimeException(\"API Error: \" + response.statusCode());",
+                "    }",
+                "    System.out.println(response.body());",
+                "}",
+                "",
+                f"{func_name}(\"{{}}\");",
+                "",
+            ]
+        elif method == "PUT":
+            lines += [
+                f"void {func_name}(int id, String jsonBody) throws Exception {{",
+                f"    HttpRequest request = HttpRequest.newBuilder()",
+                f"        .uri(URI.create(BASE_URL + \"{route}/\" + id))",
+                "        .PUT(BodyPublishers.ofString(jsonBody))",
+                "        .header(\"Content-Type\", \"application/json\")",
+                "        .build();",
+                "    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());",
+                "    if (response.statusCode() < 200 || response.statusCode() >= 300) {",
+                "        throw new RuntimeException(\"API Error: \" + response.statusCode());",
+                "    }",
+                "    System.out.println(\"Updated successfully\");",
+                "}",
+                "",
+                f"{func_name}(1, \"{{}}\");",
+                "",
+            ]
+        elif method == "DELETE":
+            lines += [
+                f"void {func_name}(int id) throws Exception {{",
+                f"    HttpRequest request = HttpRequest.newBuilder()",
+                f"        .uri(URI.create(BASE_URL + \"{route}/\" + id))",
+                "        .DELETE()",
+                "        .header(\"Content-Type\", \"application/json\")",
+                "        .build();",
+                "    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());",
+                "    if (response.statusCode() < 200 || response.statusCode() >= 300) {",
+                "        throw new RuntimeException(\"API Error: \" + response.statusCode());",
+                "    }",
+                "    System.out.println(\"Deleted successfully\");",
+                "}",
+                "",
+                f"{func_name}(1);",
+                "",
+            ]
+        else:
+            lines += [f"// {method} {path} — not supported", ""]
+
+    return "\n".join(lines)

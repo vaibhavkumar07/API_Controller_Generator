@@ -66,3 +66,70 @@ class TestGenerateClassesTS:
     def test_delete_has_promise_return_type(self):
         code = generate_classes(ep("DELETE", "/api/users"), "typescript")
         assert "Promise<void>" in code
+
+
+class TestGenerateClassesPython:
+    def test_get_uses_requests(self):
+        code = generate_classes(ep("GET", "/api/users"), "python")
+        assert "import requests" in code
+        assert "def get_users" in code
+        assert "requests.get(" in code
+        assert "raise_for_status()" in code
+
+    def test_post_uses_requests_post(self):
+        code = generate_classes(ep("POST", "/api/users"), "python")
+        assert "def create_user" in code
+        assert "requests.post(" in code
+
+    def test_put_uses_requests_put(self):
+        code = generate_classes(ep("PUT", "/api/users"), "python")
+        assert "def update_user" in code
+        assert "requests.put(" in code
+
+    def test_delete_uses_requests_delete(self):
+        code = generate_classes(ep("DELETE", "/api/users"), "python")
+        assert "def delete_user" in code
+        assert "requests.delete(" in code
+
+
+class TestGenerateClassesCSharp:
+    def test_get_uses_httpclient(self):
+        code = generate_classes(ep("GET", "/api/users"), "csharp")
+        assert "HttpClient" in code
+        assert "GetAsync" in code
+        assert "async Task" in code
+
+    def test_post_uses_post_async(self):
+        code = generate_classes(ep("POST", "/api/users"), "csharp")
+        assert "PostAsync" in code or "PostAsJsonAsync" in code
+
+    def test_put_uses_put_async(self):
+        code = generate_classes(ep("PUT", "/api/users"), "csharp")
+        assert "PutAsync" in code or "PutAsJsonAsync" in code
+
+    def test_delete_uses_delete_async(self):
+        code = generate_classes(ep("DELETE", "/api/users"), "csharp")
+        assert "DeleteAsync" in code
+
+
+class TestGenerateClassesJava:
+    def test_get_uses_httpclient(self):
+        code = generate_classes(ep("GET", "/api/users"), "java")
+        assert "HttpClient" in code
+        assert "HttpRequest" in code
+        assert "getUsers" in code
+
+    def test_post_sends_body(self):
+        code = generate_classes(ep("POST", "/api/users"), "java")
+        assert "createUser" in code
+        assert "BodyPublishers" in code
+
+    def test_put_uses_put_method(self):
+        code = generate_classes(ep("PUT", "/api/users"), "java")
+        assert "updateUser" in code
+        assert "PUT" in code
+
+    def test_delete_uses_delete_method(self):
+        code = generate_classes(ep("DELETE", "/api/users"), "java")
+        assert "deleteUser" in code
+        assert "DELETE" in code
