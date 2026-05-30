@@ -49,12 +49,12 @@ export default function Home() {
         formData.append("classesLang", clsLang);
         formData.append("file", uploadedFile);
         if (text.trim()) formData.append("inputText", text);
-        response = await fetch("http://localhost:5000/api/generate", {
+        response = await fetch("http://localhost:5002/api/generate", {
           method: "POST",
           body: formData,
         });
       } else {
-        response = await fetch("http://localhost:5000/api/generate", {
+        response = await fetch("http://localhost:5002/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ inputText: text, language: ctrlLang, classesLang: clsLang }),
