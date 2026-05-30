@@ -247,7 +247,94 @@ def _generate_js_classes(endpoints: List[Dict[str, Any]]) -> str:
 
 
 def _generate_ts_classes(endpoints: List[Dict[str, Any]]) -> str:
-    raise NotImplementedError("TypeScript classes generation not yet implemented")
+    lines = ["const BASE_URL = 'http://localhost:5001';", ""]
+    for ep in endpoints:
+        method = ep["method"]
+        path = ep["path"]
+        func_name = _get_caller_func_name(method, path)
+        route = path if path.startswith("/") else f"/{path}"
+        model_name = _guess_model_name(path)
+
+        if method == "GET":
+            lines += [
+                f"async function {func_name}(): Promise<void> {{",
+                "  try {",
+                f"    const response = await fetch(BASE_URL + '{route}', {{",
+                "      method: 'GET',",
+                "      headers: { 'Content-Type': 'application/json' }",
+                "    });",
+                "    if (!response.ok) throw new Error(`API Error: ${response.status}`);",
+                "    const data: unknown = await response.json();",
+                "    console.log(data);",
+                "  } catch (error) {",
+                "    console.error('Error:', error);",
+                "    throw error;",
+                "  }",
+                "}",
+                f"{func_name}();",
+                "",
+            ]
+        elif method == "POST":
+            lines += [
+                f"async function {func_name}(body: Record<string, unknown>): Promise<void> {{",
+                "  try {",
+                f"    const response = await fetch(BASE_URL + '{route}', {{",
+                "      method: 'POST',",
+                "      headers: { 'Content-Type': 'application/json' },",
+                "      body: JSON.stringify(body)",
+                "    });",
+                "    if (!response.ok) throw new Error(`API Error: ${response.status}`);",
+                "    const data: unknown = await response.json();",
+                "    console.log(data);",
+                "  } catch (error) {",
+                "    console.error('Error:', error);",
+                "    throw error;",
+                "  }",
+                "}",
+                f"{func_name}({{ /* {model_name} fields */ }});",
+                "",
+            ]
+        elif method == "PUT":
+            lines += [
+                f"async function {func_name}(id: number, body: Record<string, unknown>): Promise<void> {{",
+                "  try {",
+                f"    const response = await fetch(BASE_URL + '{route}/' + id, {{",
+                "      method: 'PUT',",
+                "      headers: { 'Content-Type': 'application/json' },",
+                "      body: JSON.stringify(body)",
+                "    });",
+                "    if (!response.ok) throw new Error(`API Error: ${response.status}`);",
+                "    console.log('Updated successfully');",
+                "  } catch (error) {",
+                "    console.error('Error:', error);",
+                "    throw error;",
+                "  }",
+                "}",
+                f"{func_name}(1, {{ /* {model_name} fields */ }});",
+                "",
+            ]
+        elif method == "DELETE":
+            lines += [
+                f"async function {func_name}(id: number): Promise<void> {{",
+                "  try {",
+                f"    const response = await fetch(BASE_URL + '{route}/' + id, {{",
+                "      method: 'DELETE',",
+                "      headers: { 'Content-Type': 'application/json' }",
+                "    });",
+                "    if (!response.ok) throw new Error(`API Error: ${response.status}`);",
+                "    console.log('Deleted successfully');",
+                "  } catch (error) {",
+                "    console.error('Error:', error);",
+                "    throw error;",
+                "  }",
+                "}",
+                f"{func_name}(1);",
+                "",
+            ]
+        else:
+            lines += [f"// {method} {path} — not supported", ""]
+
+    return "\n".join(lines)
 
 
 def _generate_python_classes(endpoints: List[Dict[str, Any]]) -> str:

@@ -42,3 +42,27 @@ class TestGenerateClassesJS:
     def test_unsupported_language_raises(self):
         with pytest.raises(ValueError, match="Unsupported language"):
             generate_classes(ep("GET", "/api/users"), "cobol")
+
+
+class TestGenerateClassesTS:
+    def test_get_has_promise_return_type(self):
+        code = generate_classes(ep("GET", "/api/users"), "typescript")
+        assert "Promise<void>" in code
+        assert "async function getUsers" in code
+
+    def test_get_has_typed_response(self):
+        code = generate_classes(ep("GET", "/api/users"), "typescript")
+        assert "unknown" in code or ": unknown" in code
+
+    def test_post_has_body_and_stringify(self):
+        code = generate_classes(ep("POST", "/api/users"), "typescript")
+        assert "async function createUser" in code
+        assert "JSON.stringify" in code
+
+    def test_put_has_promise_return_type(self):
+        code = generate_classes(ep("PUT", "/api/users"), "typescript")
+        assert "Promise<void>" in code
+
+    def test_delete_has_promise_return_type(self):
+        code = generate_classes(ep("DELETE", "/api/users"), "typescript")
+        assert "Promise<void>" in code
