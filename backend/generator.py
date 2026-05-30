@@ -39,6 +39,7 @@ def _get_caller_func_name(method: str, path: str) -> str:
 
 
 def _get_caller_func_name_snake(method: str, path: str) -> str:
+    # Used by _generate_python_classes
     route_name = _simplify_route_name(path).lower()   # e.g., "users"
     model_name = _guess_model_name(path).lower()       # e.g., "user"
     mapping = {
@@ -65,8 +66,6 @@ def generate_classes(endpoints: List[Dict[str, Any]], language: str) -> str:
         return _generate_csharp_classes(endpoints)
     if language == "java":
         return _generate_java_classes(endpoints)
-
-    raise ValueError("Language generation not implemented.")
 
 
 def generate_controller(endpoints: List[Dict[str, Any]], language: str) -> str:
