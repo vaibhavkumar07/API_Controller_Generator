@@ -94,12 +94,21 @@ h1 {
   align-items: stretch;
 }
 
-.output-card {
-  width: 110%;
+.input-section {
+  width: 100%;
+  margin-bottom: 24px;
 }
 
-.input-card {
-  width: 90%;
+.outputs-row {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.outputs-row > .card {
+  flex: 1;
+  min-width: 0;
 }
 
 .card {
@@ -129,7 +138,7 @@ h1 {
 
 textarea {
   width: 100%;
-  min-height: 460px;
+  min-height: 200px;
   background: rgba(15, 23, 42, 0.96);
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 18px;
@@ -255,6 +264,10 @@ button:disabled {
 @media (max-width: 1024px) {
   .grid-panel {
     grid-template-columns: 1fr;
+  }
+
+  .outputs-row {
+    flex-direction: column;
   }
 }
 

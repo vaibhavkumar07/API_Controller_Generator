@@ -106,7 +106,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid-panel">
+      <div className="input-section">
         <div className="card input-card">
           <div className="card-header">
             <h2>Input</h2>
@@ -115,7 +115,7 @@ export default function Home() {
           <textarea
             value={inputText}
             onChange={(event) => setInputText(event.target.value)}
-            rows={14}
+            rows={8}
             aria-label="API endpoint input"
           />
           <div className="file-upload-row">
@@ -133,6 +133,20 @@ export default function Home() {
             {uploadedFile && <span className="file-meta">Selected: {uploadedFile.name}</span>}
           </div>
           <div className="controls-row">
+            <button className="primary-button" onClick={handleGenerate} disabled={isLoading}>
+              Generate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="outputs-row">
+        <div className="card output-card">
+          <div className="card-header">
+            <div>
+              <h2>Controller</h2>
+              <span>Server-side controller code</span>
+            </div>
             <label>
               Language
               <select value={language} onChange={(event) => setLanguage(event.target.value)}>
@@ -143,33 +157,35 @@ export default function Home() {
                 ))}
               </select>
             </label>
-            <button className="primary-button" onClick={handleGenerate} disabled={isLoading}>
-              Generate
-            </button>
           </div>
+          <div className="output-actions">
+            <button onClick={handleCopy} disabled={!output}>Copy</button>
+            <button onClick={handleDownload} disabled={!output}>Download</button>
+            <button className="secondary-button" onClick={handleClear} disabled={!output}>Clear</button>
+          </div>
+          <pre className="output-block">{output || "Controller code will appear here."}</pre>
         </div>
 
         <div className="card output-card">
           <div className="card-header">
             <div>
-              <h2>Generated Controller</h2>
-              <span>Controller code output for the selected language.</span>
+              <h2>Classes</h2>
+              <span>Client-side caller code</span>
             </div>
+            <label>
+              Language
+              <select value="javascript" disabled>
+                <option value="javascript">JavaScript</option>
+              </select>
+            </label>
           </div>
           <div className="output-actions">
-            <button onClick={handleCopy} disabled={!output}>
-              Copy
-            </button>
-            <button onClick={handleDownload} disabled={!output}>
-              Download
-            </button>
-            <button className="secondary-button" onClick={handleClear} disabled={!output}>
-              Clear
-            </button>
+            <button disabled>Copy</button>
+            <button disabled>Download</button>
           </div>
-          <pre className="output-block">{output || "Your generated controller will appear here."}</pre>
+          <pre className="output-block">{"Classes code will appear here."}</pre>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
