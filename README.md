@@ -158,3 +158,9 @@ python -m pytest tests/ -v
 ```
 
 29 tests covering generator logic (JS, TS, Python, C#, Java) and the API endpoint.
+
+---
+
+## License
+
+MIT © [Vaibhavkumar Yadav](https://github.com/vaibhavkumar07)
