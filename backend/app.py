@@ -6,6 +6,9 @@ from generator import generate_controller, generate_classes
 app = Flask(__name__)
 CORS(app)
 
+MAX_INPUT_LENGTH = 50_000
+MAX_FILE_SIZE = 5_242_880  # 5 MB
+
 
 @app.route("/api/generate", methods=["POST"])
 def generate():
@@ -19,6 +22,11 @@ def generate():
         language = request.form.get("language", "csharp")
         classes_lang = request.form.get("classesLang", "javascript")
         if uploaded_file:
+            uploaded_file.stream.seek(0, 2)
+            size = uploaded_file.stream.tell()
+            uploaded_file.stream.seek(0)
+            if size > MAX_FILE_SIZE:
+                return jsonify({"error": "Uploaded file exceeds the 5 MB limit."}), 400
             text_from_pdf = extract_text_from_pdf(uploaded_file.stream)
             input_text = input_text or text_from_pdf
     else:
@@ -29,6 +37,9 @@ def generate():
 
     if not input_text or not language:
         return jsonify({"error": "inputText or uploaded PDF is required, and language must be selected."}), 400
+
+    if len(input_text) > MAX_INPUT_LENGTH:
+        return jsonify({"error": f"Input exceeds the {MAX_INPUT_LENGTH // 1000}k character limit."}), 400
 
     try:
         endpoints = parse_input(input_text)

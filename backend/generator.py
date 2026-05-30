@@ -81,7 +81,7 @@ def generate_controller(endpoints: List[Dict[str, Any]], language: str) -> str:
     if language == "python":
         return _generate_python(endpoints)
 
-    raise ValueError("Language generation not implemented.")
+    raise ValueError(f"Language dispatch missing for: {language}")
 
 
 def _generate_csharp(endpoints: List[Dict[str, Any]]) -> str:
@@ -90,7 +90,6 @@ def _generate_csharp(endpoints: List[Dict[str, Any]]) -> str:
 
     for ep in endpoints:
         method = ep["method"]
-        path = ep["path"].strip("/")
         model_name = _guess_model_name(ep["path"])
         if method == "GET":
             lines += ["    [HttpGet]", "    public async Task<IActionResult> GetAll()", "    {", f"        return Ok(await _context.{_simplify_route_name(ep['path'])}.ToListAsync());", "    }", ""]
