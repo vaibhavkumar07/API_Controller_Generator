@@ -86,12 +86,12 @@ export default function Home() {
 
   function handleControllerLangChange(val: string) {
     setLanguage(val);
-    if (output || classesOutput) generateWith(inputText, val, classesLang);
+    if (!isLoading && (output || classesOutput)) generateWith(inputText, val, classesLang);
   }
 
   function handleClassesLangChange(val: string) {
     setClassesLang(val);
-    if (output || classesOutput) generateWith(inputText, language, val);
+    if (!isLoading && (output || classesOutput)) generateWith(inputText, language, val);
   }
 
   function handleCopy() {
