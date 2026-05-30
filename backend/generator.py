@@ -66,6 +66,7 @@ def generate_classes(endpoints: List[Dict[str, Any]], language: str) -> str:
         return _generate_csharp_classes(endpoints)
     if language == "java":
         return _generate_java_classes(endpoints)
+    raise ValueError(f"Language dispatch missing for: {language}")
 
 
 def generate_controller(endpoints: List[Dict[str, Any]], language: str) -> str:
