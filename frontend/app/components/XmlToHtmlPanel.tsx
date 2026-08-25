@@ -3,9 +3,27 @@
 import { useRef, useState } from "react";
 import { XML_TO_HTML_URL } from "../lib/api";
 
-const defaultXml = `<catalog>
-  <book id="1">The Hobbit</book>
-</catalog>`;
+const defaultXml = `<?xml version="1.0" encoding="UTF-8"?>
+<datacenter branch="US-West-SiliconValley">
+    <network_management ui-component="tabs">
+        <hardware_inventory>
+            <router_ledger>
+                <device><model>Cisco Nexus 9K</model><status>Active</status><ip>10.0.0.1</ip></device>
+                <device><model>Juniper PTX10K</model><status>Pending</status><ip>10.0.0.2</ip></device>
+                <device><model>Arista 7060X</model><status>Offline</status><ip>10.0.0.3</ip></device>
+            </router_ledger>
+        </hardware_inventory>
+        <provisioning_console>
+            <automated_tasks ui-component="accordion">
+                <firewall_policies>
+                    <rule_name>Block External ICMP Pings</rule_name>
+                    <rule_input type="text" placeholder="Enter target IP Subnet CIDR" />
+                    <action_button method="deployFirewallRule">Apply Global Rule</action_button>
+                </firewall_policies>
+            </automated_tasks>
+        </provisioning_console>
+    </network_management>
+</datacenter>`;
 
 type XmlToHtmlPanelProps = {
   status: string;
@@ -137,18 +155,37 @@ export default function XmlToHtmlPanel({
         </div>
       </div>
 
-      <div className="card output-card">
-        <div className="card-header">
-          <div>
-            <h2>HTML preview</h2>
-            <span>Sandboxed render of converted document</span>
+      <div className="outputs-row xml-outputs">
+        <div className="card output-card">
+          <div className="card-header">
+            <div>
+              <h2>HTML code</h2>
+              <span>Generated HTML source</span>
+            </div>
           </div>
+          <pre className="output-block" aria-label="HTML source code">
+            {htmlOutput || "Converted HTML source will appear here."}
+          </pre>
         </div>
-        {htmlOutput ? (
-          <iframe className="html-preview" title="HTML preview" sandbox="" srcDoc={htmlOutput} />
-        ) : (
-          <pre className="output-block">Converted HTML will appear here.</pre>
-        )}
+
+        <div className="card output-card">
+          <div className="card-header">
+            <div>
+              <h2>HTML preview</h2>
+              <span>Sandboxed render of converted document</span>
+            </div>
+          </div>
+          {htmlOutput ? (
+            <iframe
+              className="html-preview"
+              title="HTML preview"
+              sandbox="allow-scripts"
+              srcDoc={htmlOutput}
+            />
+          ) : (
+            <pre className="output-block">Converted HTML preview will appear here.</pre>
+          )}
+        </div>
       </div>
     </div>
   );

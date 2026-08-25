@@ -393,8 +393,13 @@ button:focus-visible,
   background: #fff;
 }
 
-.xml-panel .output-card {
+.xml-panel .xml-outputs {
   margin-top: 16px;
+}
+
+.xml-panel .html-preview {
+  min-height: 220px;
+  max-height: 420px;
 }
 
 @media (max-width: 900px) {

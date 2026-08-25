@@ -62,8 +62,24 @@ Frontend: `http://localhost:3000`.
 
 1. Open the app — brand header shows **API Generate** / **XML → HTML** and an **API Docs** link (Swagger UI).
 2. **API Generate** — paste endpoints (or upload PDF), click **Generate**, use Controller/Classes panels (copy / download / clear).
-3. **XML → HTML** — paste or upload XML, **Convert**, then preview / download / copy.
+3. **XML → HTML** — paste or upload XML, **Convert**, then view HTML source + live preview side-by-side (download / copy).
 4. Interactive API docs: [http://localhost:5002/api/docs](http://localhost:5002/api/docs)
+
+### XML → HTML converter behavior
+
+Schema-agnostic recursive engine (`backend/xml_to_html.py`). Arbitrary well-formed XML maps to a standalone HTML5 document.
+
+| Signal in XML | HTML result |
+|---|---|
+| Nested elements | Sections / nested layout |
+| Repeating sibling records with the same tag | Data ledger `<table>` |
+| `ui-component="tabs"` | Tabbed panels (JS in preview) |
+| `ui-component="accordion"` (or tag with `collapse`) | Collapsible panels |
+| `method` / `onclick` attrs | Action buttons |
+| `type` / `placeholder` attrs | Labeled inputs |
+| Status text (`Active`, `Offline`, `Pending`, …) | Colored state classes |
+
+Output is escaped HTML with embedded CSS + light JS for tabs/accordion. Preview iframe uses `sandbox="allow-scripts"`.
 
 ### Supported generate input formats
 
@@ -154,6 +170,8 @@ curl -X POST http://localhost:5002/api/v1/generate \
 
 ### `POST /api/v1/xml-to-html`
 
+Accepts any well-formed XML. Returns a full HTML document (enterprise dashboard styling, tables, tabs/accordion when marked).
+
 #### JSON request
 
 ```http
@@ -161,7 +179,7 @@ POST /api/v1/xml-to-html
 Content-Type: application/json
 
 {
-  "xmlText": "<catalog><book id=\"1\">The Hobbit</book></catalog>"
+  "xmlText": "<logistics_hub branch=\"Midwest\"><inventory_ledger><item><sku>SKU-1</sku><qty>10</qty></item><item><sku>SKU-2</sku><qty>3</qty></item></inventory_ledger></logistics_hub>"
 }
 ```
 
@@ -177,6 +195,8 @@ xmlText=<optional override>
 
 \* Either `xmlText` or `file` is required. Non-empty `xmlText` wins.
 
+**Limits:** same as generate (50k chars / 5 MB). Invalid XML → `400` with `{ "error": "..." }`.
+
 #### Response `200 OK`
 
 ```json
@@ -188,7 +208,7 @@ xmlText=<optional override>
 ```bash
 curl -X POST http://localhost:5002/api/v1/xml-to-html \
   -H "Content-Type: application/json" \
-  -d '{"xmlText":"<catalog><book id=\"1\">The Hobbit</book></catalog>"}'
+  -d '{"xmlText":"<datacenter><network_management ui-component=\"tabs\"><hardware_inventory><status>Active</status></hardware_inventory><provisioning_console><status>Pending</status></provisioning_console></network_management></datacenter>"}'
 ```
 
 ---
