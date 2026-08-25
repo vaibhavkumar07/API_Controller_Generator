@@ -81,7 +81,7 @@ def test_xml_to_html_json_success(client):
     data = resp.get_json()
     assert "html" in data
     assert "<!DOCTYPE html>" in data["html"]
-    assert "child" in data["html"]
+    assert "<th>_</th>" in data["html"]
     assert "hi" in data["html"]
 
 
