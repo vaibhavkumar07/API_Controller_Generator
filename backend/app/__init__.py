@@ -37,10 +37,11 @@ def create_app(config_object: type = Config) -> Flask:
         endpoint="legacy_xml_to_html",
     )
 
+    # Flasgger natively emits swagger: "2.0". Do not set openapi — both fields break Swagger UI.
     Swagger(
         application,
         template={
-            "openapi": "3.0.3",
+            "swagger": "2.0",
             "info": {
                 "title": "API Framework",
                 "description": (
@@ -49,6 +50,7 @@ def create_app(config_object: type = Config) -> Flask:
                 ),
                 "version": "1.0.0",
             },
+            "basePath": "/",
             "tags": [
                 {"name": "Generate", "description": "Controller and client code generation"},
                 {"name": "Transform", "description": "XML to HTML conversion"},
