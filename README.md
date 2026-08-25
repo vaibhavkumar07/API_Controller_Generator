@@ -44,6 +44,8 @@ Frontend runs on `http://localhost:3000`.
 5. Use **Copy**, **Download**, or **Clear** per panel independently
 6. Changing a language dropdown after generation auto-regenerates that output
 
+**XML → HTML tab:** Switch to **XML → HTML** to paste or upload well-formed XML, click **Convert**, then preview the result in the page, or **Download**, **Copy**, or **Clear** the HTML output.
+
 ### Supported input formats
 
 ```
@@ -145,6 +147,67 @@ const res = await fetch("http://localhost:5002/api/generate", {
   }),
 });
 const { controllerCode, classesCode } = await res.json();
+```
+
+### `POST /api/xml-to-html`
+
+Convert well-formed XML into a standalone HTML document. Use the **XML → HTML** tab in the UI, or call the API directly.
+
+#### JSON request
+
+```http
+POST /api/xml-to-html
+Content-Type: application/json
+
+{
+  "xmlText": "<catalog><book id=\"1\">The Hobbit</book></catalog>"
+}
+```
+
+#### Multipart request (XML file upload)
+
+```http
+POST /api/xml-to-html
+Content-Type: multipart/form-data
+
+file=<file.xml>
+xmlText=<optional override>
+```
+
+#### Parameters
+
+| Field | Type | Required | Default | Values |
+|---|---|---|---|---|
+| `xmlText` | string | yes* | — | Well-formed XML as text |
+| `file` | file | yes* | — | `.xml` file containing well-formed XML |
+
+\* Either `xmlText` or `file` is required. If both are provided, non-empty `xmlText` takes precedence.
+
+**Limits:** `xmlText` max 50,000 characters. File max 5 MB.
+
+#### Response `200 OK`
+
+```json
+{
+  "html": "<!DOCTYPE html>..."
+}
+```
+
+#### Error responses
+
+| Status | Cause |
+|---|---|
+| `400` | Missing input, oversize, malformed XML |
+| `500` | Unexpected conversion failure |
+
+#### Example — curl
+
+```bash
+curl -X POST http://localhost:5002/api/xml-to-html \
+  -H "Content-Type: application/json" \
+  -d '{
+    "xmlText": "<catalog><book id=\"1\">The Hobbit</book></catalog>"
+  }'
 ```
 
 ---
