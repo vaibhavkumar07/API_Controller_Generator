@@ -1,45 +1,26 @@
-# Backend for API Controller Generator
+# Backend
 
-## Setup
+Flask app factory with versioned Blueprints.
 
-1. Create a virtual environment:
+## Run
 
 ```bash
-python3 -m venv .venv
 source .venv/bin/activate
-```
-
-2. Install dependencies:
-
-```bash
 pip install -r requirements.txt
+
+# debug
+python run.py
+
+# production-style
+gunicorn -w 2 -b 0.0.0.0:5002 wsgi:app
 ```
 
-3. Run the server:
+- API: `http://localhost:5002/api/v1/...`
+- Docs: `http://localhost:5002/api/docs`
+- Health: `http://localhost:5002/health`
+
+## Tests
 
 ```bash
-python app.py
-```
-
-## API
-
-POST /api/generate
-
-Supports raw JSON/text input and PDF uploads. When sending a PDF, use `multipart/form-data` with the `file` field and optional `inputText`.
-
-Request body:
-
-```json
-{
-  "inputText": "GET /api/quizzes\nResponse:\n[ ... ]",
-  "language": "csharp"
-}
-```
-
-Response:
-
-```json
-{
-  "controllerCode": "..."
-}
+python -m pytest tests/ -v
 ```
