@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const languages = [
   { value: "csharp", label: "C# (.NET)" },
@@ -48,6 +48,7 @@ export default function Home() {
   const [htmlOutput, setHtmlOutput] = useState("");
   const [xmlStatus, setXmlStatus] = useState("Ready to convert XML.");
   const [xmlLoading, setXmlLoading] = useState(false);
+  const xmlFileInputRef = useRef<HTMLInputElement>(null);
 
   async function generateWith(text: string, ctrlLang: string, clsLang: string) {
     if (!text.trim()) return;
@@ -209,6 +210,12 @@ export default function Home() {
     setXmlFile(null);
     setHtmlOutput("");
     setXmlStatus("Cleared.");
+    if (xmlFileInputRef.current) xmlFileInputRef.current.value = "";
+  }
+
+  function handleTabKeyDown(event: React.KeyboardEvent) {
+    if (event.key === "ArrowRight") setMode("xmlToHtml");
+    else if (event.key === "ArrowLeft") setMode("generate");
   }
 
   const activeStatus = mode === "generate" ? status : xmlStatus;
@@ -216,21 +223,30 @@ export default function Home() {
 
   return (
     <main className="page-shell">
-      <div className="mode-tabs" role="tablist" aria-label="App mode">
+      <div
+        className="mode-tabs"
+        role="tablist"
+        aria-label="App mode"
+        onKeyDown={handleTabKeyDown}
+      >
         <button
           type="button"
+          id="tab-generate"
           role="tab"
           className={mode === "generate" ? "mode-tab active" : "mode-tab"}
           aria-selected={mode === "generate"}
+          aria-controls="panel-generate"
           onClick={() => setMode("generate")}
         >
           API Generate
         </button>
         <button
           type="button"
+          id="tab-xml"
           role="tab"
           className={mode === "xmlToHtml" ? "mode-tab active" : "mode-tab"}
           aria-selected={mode === "xmlToHtml"}
+          aria-controls="panel-xml"
           onClick={() => setMode("xmlToHtml")}
         >
           XML → HTML
@@ -260,7 +276,11 @@ export default function Home() {
       </section>
 
       {mode === "generate" ? (
-        <>
+        <div
+          id="panel-generate"
+          role="tabpanel"
+          aria-labelledby="tab-generate"
+        >
           <div className="input-section">
             <div className="card">
               <div className="card-header">
@@ -357,9 +377,14 @@ export default function Home() {
               </pre>
             </div>
           </div>
-        </>
+        </div>
       ) : (
-        <div className="xml-panel">
+        <div
+          id="panel-xml"
+          role="tabpanel"
+          aria-labelledby="tab-xml"
+          className="xml-panel"
+        >
           <div className="input-section">
             <div className="card">
               <div className="card-header">
@@ -377,6 +402,7 @@ export default function Home() {
                 <label className="file-label">
                   Upload XML
                   <input
+                    ref={xmlFileInputRef}
                     type="file"
                     accept=".xml,text/xml,application/xml"
                     onChange={(event) => {
@@ -392,7 +418,7 @@ export default function Home() {
                     type="button"
                     className="primary-button"
                     onClick={handleXmlConvert}
-                    disabled={xmlLoading}
+                    disabled={xmlLoading || (!xmlText.trim() && !xmlFile)}
                   >
                     {xmlLoading ? "Converting…" : "Convert"}
                   </button>
