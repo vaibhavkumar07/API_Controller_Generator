@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from parser import extract_text_from_pdf, parse_input
 from generator import generate_controller, generate_classes
+from xml_to_html import xml_to_html, XmlToHtmlError
 
 app = Flask(__name__)
 CORS(app)
@@ -54,6 +55,44 @@ def generate():
             "language": language,
             "classesLang": classes_lang,
         })
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+
+@app.route("/api/xml-to-html", methods=["POST"])
+def convert_xml_to_html():
+    xml_text = ""
+
+    if request.content_type and request.content_type.startswith("multipart/form-data"):
+        uploaded_file = request.files.get("file")
+        xml_text = request.form.get("xmlText", "") or ""
+        if uploaded_file:
+            uploaded_file.stream.seek(0, 2)
+            size = uploaded_file.stream.tell()
+            uploaded_file.stream.seek(0)
+            if size > MAX_FILE_SIZE:
+                return jsonify({"error": "Uploaded file exceeds the 5 MB limit."}), 400
+            file_bytes = uploaded_file.read()
+            try:
+                file_text = file_bytes.decode("utf-8")
+            except UnicodeDecodeError:
+                return jsonify({"error": "Uploaded file must be UTF-8 text XML."}), 400
+            xml_text = xml_text or file_text
+    else:
+        data = request.get_json(silent=True) or {}
+        xml_text = data.get("xmlText", "") or ""
+
+    if not xml_text.strip():
+        return jsonify({"error": "xmlText or uploaded XML file is required."}), 400
+
+    if len(xml_text) > MAX_INPUT_LENGTH:
+        return jsonify({"error": f"Input exceeds the {MAX_INPUT_LENGTH // 1000}k character limit."}), 400
+
+    try:
+        html_doc = xml_to_html(xml_text)
+        return jsonify({"html": html_doc})
+    except XmlToHtmlError as exc:
+        return jsonify({"error": str(exc)}), 400
     except Exception as exc:
         return jsonify({"error": str(exc)}), 500
 

@@ -1,3 +1,5 @@
+import io
+
 import pytest
 from app import app
 
@@ -68,3 +70,41 @@ def test_generate_response_includes_classes_lang(client):
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["classesLang"] == "java"
+
+
+def test_xml_to_html_json_success(client):
+    resp = client.post(
+        "/api/xml-to-html",
+        json={"xmlText": "<root><child>hi</child></root>"},
+    )
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "html" in data
+    assert "<!DOCTYPE html>" in data["html"]
+    assert "child" in data["html"]
+    assert "hi" in data["html"]
+
+
+def test_xml_to_html_missing_input_returns_400(client):
+    resp = client.post("/api/xml-to-html", json={})
+    assert resp.status_code == 400
+    assert "error" in resp.get_json()
+
+
+def test_xml_to_html_invalid_xml_returns_400(client):
+    resp = client.post("/api/xml-to-html", json={"xmlText": "<root><x>"})
+    assert resp.status_code == 400
+    assert "error" in resp.get_json()
+
+
+def test_xml_to_html_multipart_file(client):
+    data = {
+        "file": (io.BytesIO(b"<note><body>ok</body></note>"), "note.xml"),
+    }
+    resp = client.post(
+        "/api/xml-to-html",
+        data=data,
+        content_type="multipart/form-data",
+    )
+    assert resp.status_code == 200
+    assert "ok" in resp.get_json()["html"]
