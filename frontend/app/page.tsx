@@ -26,7 +26,14 @@ Response:
   }
 ]`;
 
+const defaultXml = `<catalog>
+  <book id="1">The Hobbit</book>
+</catalog>`;
+
+type AppMode = "generate" | "xmlToHtml";
+
 export default function Home() {
+  const [mode, setMode] = useState<AppMode>("generate");
   const [inputText, setInputText] = useState(defaultInput);
   const [language, setLanguage] = useState("csharp");
   const [output, setOutput] = useState("");
@@ -35,6 +42,12 @@ export default function Home() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [classesLang, setClassesLang] = useState("javascript");
   const [classesOutput, setClassesOutput] = useState("");
+
+  const [xmlText, setXmlText] = useState(defaultXml);
+  const [xmlFile, setXmlFile] = useState<File | null>(null);
+  const [htmlOutput, setHtmlOutput] = useState("");
+  const [xmlStatus, setXmlStatus] = useState("Ready to convert XML.");
+  const [xmlLoading, setXmlLoading] = useState(false);
 
   async function generateWith(text: string, ctrlLang: string, clsLang: string) {
     if (!text.trim()) return;
@@ -138,118 +151,285 @@ export default function Home() {
     setStatus("Classes output cleared.");
   }
 
+  async function handleXmlConvert() {
+    if (!xmlText.trim() && !xmlFile) return;
+    setXmlStatus("Converting XML to HTML...");
+    setXmlLoading(true);
+    try {
+      let response: Response;
+      if (xmlFile) {
+        const formData = new FormData();
+        formData.append("file", xmlFile);
+        if (xmlText.trim()) formData.append("xmlText", xmlText);
+        response = await fetch("http://localhost:5002/api/xml-to-html", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        response = await fetch("http://localhost:5002/api/xml-to-html", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ xmlText }),
+        });
+      }
+      const json = await response.json();
+      if (!response.ok) {
+        setXmlStatus(json.error || "Conversion failed.");
+        setHtmlOutput("");
+      } else {
+        setHtmlOutput(json.html || "");
+        setXmlStatus("HTML generated successfully.");
+      }
+    } catch {
+      setXmlStatus("Server request failed. Is the backend running?");
+      setHtmlOutput("");
+    } finally {
+      setXmlLoading(false);
+    }
+  }
+
+  function handleHtmlDownload() {
+    const blob = new Blob([htmlOutput], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "converted.html";
+    a.click();
+    URL.revokeObjectURL(url);
+    setXmlStatus("Downloaded converted.html.");
+  }
+
+  function handleHtmlCopy() {
+    navigator.clipboard.writeText(htmlOutput);
+    setXmlStatus("Copied HTML to clipboard.");
+  }
+
+  function handleXmlClear() {
+    setXmlText("");
+    setXmlFile(null);
+    setHtmlOutput("");
+    setXmlStatus("Cleared.");
+  }
+
+  const activeStatus = mode === "generate" ? status : xmlStatus;
+  const activeLoading = mode === "generate" ? isLoading : xmlLoading;
+
   return (
     <main className="page-shell">
+      <div className="mode-tabs" role="tablist" aria-label="App mode">
+        <button
+          type="button"
+          role="tab"
+          className={mode === "generate" ? "mode-tab active" : "mode-tab"}
+          aria-selected={mode === "generate"}
+          onClick={() => setMode("generate")}
+        >
+          API Generate
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className={mode === "xmlToHtml" ? "mode-tab active" : "mode-tab"}
+          aria-selected={mode === "xmlToHtml"}
+          onClick={() => setMode("xmlToHtml")}
+        >
+          XML → HTML
+        </button>
+      </div>
+
       <section className="hero-panel">
         <div>
-          <p className="eyebrow">API Controller Generator</p>
-          <h1>Generate controller code from endpoint definitions</h1>
+          <p className="eyebrow">
+            {mode === "generate" ? "API Controller Generator" : "XML to HTML"}
+          </p>
+          <h1>
+            {mode === "generate"
+              ? "Generate controller code from endpoint definitions"
+              : "Convert XML into browsable HTML"}
+          </h1>
           <p className="description">
-            Paste API endpoint definitions, upload a PDF, choose a language, and generate controller boilerplate instantly.
+            {mode === "generate"
+              ? "Paste API endpoint definitions, upload a PDF, choose a language, and generate controller boilerplate instantly."
+              : "Paste XML or upload an .xml file, convert it to a standalone HTML document, then preview, copy, or download."}
           </p>
         </div>
         <div className="status-card">
-          <p>{status}</p>
-          {isLoading && <div className="spinner" />}
+          <p>{activeStatus}</p>
+          {activeLoading && <div className="spinner" />}
         </div>
       </section>
 
-      <div className="input-section">
-        <div className="card">
-          <div className="card-header">
-            <h2>Input</h2>
-            <span>Text, JSON, or PDF upload</span>
-          </div>
-          <textarea
-            value={inputText}
-            onChange={(event) => setInputText(event.target.value)}
-            rows={8}
-            aria-label="API endpoint input"
-          />
-          <div className="file-upload-row">
-            <label className="file-label">
-              Upload PDF
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={(event) => {
-                  const file = event.target.files?.[0] ?? null;
-                  setUploadedFile(file);
-                }}
+      {mode === "generate" ? (
+        <>
+          <div className="input-section">
+            <div className="card">
+              <div className="card-header">
+                <h2>Input</h2>
+                <span>Text, JSON, or PDF upload</span>
+              </div>
+              <textarea
+                value={inputText}
+                onChange={(event) => setInputText(event.target.value)}
+                rows={8}
+                aria-label="API endpoint input"
               />
-            </label>
-            {uploadedFile && <span className="file-meta">Selected: {uploadedFile.name}</span>}
-          </div>
-          <div className="controls-row">
-            <button className="primary-button" onClick={handleGenerate} disabled={isLoading}>
-              Generate
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="outputs-row">
-        <div className="card output-card">
-          <div className="card-header">
-            <div>
-              <h2>Controller</h2>
-              <span>Server-side controller code</span>
+              <div className="file-upload-row">
+                <label className="file-label">
+                  Upload PDF
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] ?? null;
+                      setUploadedFile(file);
+                    }}
+                  />
+                </label>
+                {uploadedFile && <span className="file-meta">Selected: {uploadedFile.name}</span>}
+              </div>
+              <div className="controls-row">
+                <button className="primary-button" onClick={handleGenerate} disabled={isLoading}>
+                  Generate
+                </button>
+              </div>
             </div>
-            <label>
-              Language
-              <select value={language} onChange={(event) => handleControllerLangChange(event.target.value)}>
-                {languages.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
           </div>
-          <div className="output-actions">
-            <button onClick={handleCopy} disabled={!output}>Copy</button>
-            <button onClick={handleDownload} disabled={!output}>Download</button>
-            <button className="secondary-button" onClick={handleClear} disabled={!output}>Clear</button>
-          </div>
-          <pre className="output-block">{output || "Controller code will appear here."}</pre>
-        </div>
 
-        <div className="card output-card">
-          <div className="card-header">
-            <div>
-              <h2>Classes</h2>
-              <span>Client-side caller code</span>
+          <div className="outputs-row">
+            <div className="card output-card">
+              <div className="card-header">
+                <div>
+                  <h2>Controller</h2>
+                  <span>Server-side controller code</span>
+                </div>
+                <label>
+                  Language
+                  <select value={language} onChange={(event) => handleControllerLangChange(event.target.value)}>
+                    {languages.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="output-actions">
+                <button onClick={handleCopy} disabled={!output}>Copy</button>
+                <button onClick={handleDownload} disabled={!output}>Download</button>
+                <button className="secondary-button" onClick={handleClear} disabled={!output}>Clear</button>
+              </div>
+              <pre className="output-block">{output || "Controller code will appear here."}</pre>
             </div>
-            <label>
-              Language
-              <select
-                value={classesLang}
-                onChange={(event) => handleClassesLangChange(event.target.value)}
-              >
-                {classesLanguages.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+
+            <div className="card output-card">
+              <div className="card-header">
+                <div>
+                  <h2>Classes</h2>
+                  <span>Client-side caller code</span>
+                </div>
+                <label>
+                  Language
+                  <select
+                    value={classesLang}
+                    onChange={(event) => handleClassesLangChange(event.target.value)}
+                  >
+                    {classesLanguages.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="output-actions">
+                <button onClick={handleCopyClasses} disabled={!classesOutput}>
+                  Copy
+                </button>
+                <button onClick={handleDownloadClasses} disabled={!classesOutput}>
+                  Download
+                </button>
+                <button className="secondary-button" onClick={handleClearClasses} disabled={!classesOutput}>
+                  Clear
+                </button>
+              </div>
+              <pre className="output-block">
+                {classesOutput || "Classes code will appear here."}
+              </pre>
+            </div>
           </div>
-          <div className="output-actions">
-            <button onClick={handleCopyClasses} disabled={!classesOutput}>
-              Copy
-            </button>
-            <button onClick={handleDownloadClasses} disabled={!classesOutput}>
-              Download
-            </button>
-            <button className="secondary-button" onClick={handleClearClasses} disabled={!classesOutput}>
-              Clear
-            </button>
+        </>
+      ) : (
+        <div className="xml-panel">
+          <div className="input-section">
+            <div className="card">
+              <div className="card-header">
+                <h2>XML input</h2>
+                <span>Paste XML or upload a file</span>
+              </div>
+              <textarea
+                value={xmlText}
+                onChange={(event) => setXmlText(event.target.value)}
+                rows={12}
+                spellCheck={false}
+                aria-label="XML input"
+              />
+              <div className="file-upload-row">
+                <label className="file-label">
+                  Upload XML
+                  <input
+                    type="file"
+                    accept=".xml,text/xml,application/xml"
+                    onChange={(event) => {
+                      setXmlFile(event.target.files?.[0] ?? null);
+                    }}
+                  />
+                </label>
+                {xmlFile && <span className="file-meta">Selected: {xmlFile.name}</span>}
+              </div>
+              <div className="controls-row">
+                <div className="output-actions">
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={handleXmlConvert}
+                    disabled={xmlLoading}
+                  >
+                    {xmlLoading ? "Converting…" : "Convert"}
+                  </button>
+                  <button type="button" onClick={handleHtmlDownload} disabled={!htmlOutput}>
+                    Download
+                  </button>
+                  <button type="button" onClick={handleHtmlCopy} disabled={!htmlOutput}>
+                    Copy
+                  </button>
+                  <button type="button" className="secondary-button" onClick={handleXmlClear}>
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <pre className="output-block">
-            {classesOutput || "Classes code will appear here."}
-          </pre>
+
+          <div className="card output-card">
+            <div className="card-header">
+              <div>
+                <h2>HTML preview</h2>
+                <span>Sandboxed render of converted document</span>
+              </div>
+            </div>
+            {htmlOutput ? (
+              <iframe
+                className="html-preview"
+                title="HTML preview"
+                sandbox=""
+                srcDoc={htmlOutput}
+              />
+            ) : (
+              <pre className="output-block">Converted HTML will appear here.</pre>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }
