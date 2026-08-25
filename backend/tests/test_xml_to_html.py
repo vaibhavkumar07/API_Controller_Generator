@@ -15,7 +15,7 @@ def test_nested_elements_and_attributes():
     html = xml_to_html(xml)
     assert "catalog" in html
     assert "book" in html
-    assert "id=" in html or "id" in html
+    assert 'id="1"' in html
     assert "1" in html
     assert "The Hobbit" in html
 
@@ -24,7 +24,7 @@ def test_escapes_special_characters_in_text():
     html = xml_to_html("<n>a&lt;b&amp;c</n>")
     # Parsed text is "a<b&c"; must be escaped in HTML output
     assert "a&lt;b&amp;c" in html
-    assert "<script" not in html.lower() or html.lower().count("<script") == 0
+    assert "<script" not in html.lower()
 
 
 def test_script_like_text_is_escaped_not_executed():
